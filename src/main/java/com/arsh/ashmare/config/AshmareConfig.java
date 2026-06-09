@@ -58,7 +58,9 @@ public final class AshmareConfig {
 					List.of(
 							"# Ashmare skin source pool",
 							"# Add real Minecraft Java usernames below, one per line.",
-							"# Example: Notch"
+							"Notch",
+							"Dream",
+							"Technoblade"
 					)
 			);
 

@@ -31,7 +31,7 @@ public final class LineListConfigFile implements ConfigFile {
 	@Override
 	public synchronized void load() {
 		if (Files.notExists(path)) {
-			values = defaultValues;
+			values = List.copyOf(defaultValues);
 			save();
 			return;
 		}
