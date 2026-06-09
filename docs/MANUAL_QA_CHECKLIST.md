@@ -1,6 +1,6 @@
 # Ashmare Manual QA and Validation Checklist
 
-Version under test: `1.0.0`  
+Version under test: `1.0.1`
 Target: Minecraft `1.21.11`, Fabric Loader `0.19.3+`, Java `21`  
 Status values: `PASS`, `FAIL`, `BLOCKED`, `NOT RUN`
 

@@ -24,6 +24,40 @@ also resolves the entry.
 Existing `owners.json` files are loaded as written. Ashmare never re-adds the
 default owner to an existing file, including an intentionally empty one.
 
+## Skin source pool
+
+Ashmare reads source skins from the server's
+`config/ashmare/skins.txt`. Add real Minecraft Java usernames, one per line:
+
+```text
+Shyha
+Notch
+jeb_
+```
+
+Blank lines and lines beginning with `#` or `//` are ignored. UTF-8 files with
+or without a byte-order mark are supported. Comma-, semicolon-, and
+space-separated usernames are also accepted, although one username per line is
+recommended. Duplicate usernames are ignored case-insensitively.
+
+The file must be named exactly `skins.txt`, not `skins.txt.txt`. On a hosted
+server, edit the file inside that server's `config/ashmare/` directory. Run
+`/ashmare skins randomize` after saving it; Ashmare reloads the file for every
+randomization, so a server restart is not required. Source accounts must exist
+on Minecraft Java Edition and have a skin available through Mojang.
+
+## Building the mod
+
+Install Java 21, open a terminal in the Ashmare source directory, and run:
+
+```powershell
+.\gradlew.bat clean build
+```
+
+The distributable file is `build/libs/ashmare-1.0.1.jar`. Do not use the
+`-sources.jar`. Place the distributable JAR and the matching Fabric API JAR in
+the server's `mods/` directory, replacing the previous Ashmare JAR.
+
 ## Testing
 
 The complete manual release checklist is in

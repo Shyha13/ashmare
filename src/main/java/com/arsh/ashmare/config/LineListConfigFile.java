@@ -11,10 +11,16 @@ import java.util.function.Consumer;
 
 public final class LineListConfigFile implements ConfigFile {
 	private final Path path;
+	private final List<String> defaultValues;
 	private List<String> values;
 
 	public LineListConfigFile(Path path) {
+		this(path, List.of());
+	}
+
+	public LineListConfigFile(Path path, List<String> defaultValues) {
 		this.path = Objects.requireNonNull(path, "path");
+		this.defaultValues = normalize(defaultValues);
 	}
 
 	@Override
@@ -25,7 +31,7 @@ public final class LineListConfigFile implements ConfigFile {
 	@Override
 	public synchronized void load() {
 		if (Files.notExists(path)) {
-			values = List.of();
+			values = defaultValues;
 			save();
 			return;
 		}

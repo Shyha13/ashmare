@@ -53,7 +53,14 @@ public final class AshmareConfig {
 					NULLABLE_GSON
 			);
 	private static final LineListConfigFile SKIN_USERNAMES =
-			new LineListConfigFile(DIRECTORY.resolve("skins.txt"));
+			new LineListConfigFile(
+					DIRECTORY.resolve("skins.txt"),
+					List.of(
+							"# Ashmare skin source pool",
+							"# Add real Minecraft Java usernames below, one per line.",
+							"# Example: Notch"
+					)
+			);
 
 	private static final List<ConfigFile> FILES = List.of(
 			DEATHBAN,

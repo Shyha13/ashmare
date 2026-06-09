@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -48,14 +47,17 @@ public final class SkinRandomizer {
 
 		try {
 			AshmareConfig.skinUsernames().load();
-			SourceList sourceList = normalizeSources(
+			SkinSourceParser.Result sourceList = SkinSourceParser.parse(
 					AshmareConfig.skinUsernames().get()
 			);
 			if (sourceList.usernames().isEmpty()) {
 				RANDOMIZATION_RUNNING.set(false);
 				return Optional.of(CompletableFuture.completedFuture(
 						SkinRandomizationResult.failure(
-								"No valid skin usernames were found in skins.txt.",
+								"No usable skin usernames were found in "
+										+ AshmareConfig.skinUsernames().path()
+										+ ". Add real Minecraft Java usernames "
+										+ "one per line, then run the command again.",
 								sourceList.invalidSources()
 						)
 				));
@@ -268,23 +270,6 @@ public final class SkinRandomizer {
 		);
 	}
 
-	private static SourceList normalizeSources(List<String> sourceLines) {
-		Map<String, String> unique = new LinkedHashMap<>();
-		List<String> invalid = new ArrayList<>();
-		for (String sourceLine : sourceLines) {
-			String username = sourceLine.trim();
-			if (!username.matches("[A-Za-z0-9_]{3,16}")) {
-				invalid.add(username + ": invalid Minecraft username");
-				continue;
-			}
-			unique.putIfAbsent(username.toLowerCase(Locale.ROOT), username);
-		}
-		return new SourceList(
-				List.copyOf(unique.values()),
-				List.copyOf(invalid)
-		);
-	}
-
 	private record PlayerIdentity(UUID uuid, String username) {
 		static PlayerIdentity from(ServerPlayer player) {
 			return new PlayerIdentity(
@@ -292,12 +277,6 @@ public final class SkinRandomizer {
 					player.getGameProfile().name()
 			);
 		}
-	}
-
-	private record SourceList(
-			List<String> usernames,
-			List<String> invalidSources
-	) {
 	}
 
 	private record SourceOutcome(
