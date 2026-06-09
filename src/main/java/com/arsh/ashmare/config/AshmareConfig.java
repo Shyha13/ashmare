@@ -52,8 +52,11 @@ public final class AshmareConfig {
 					OwnersConfig::firstStartupDefault,
 					NULLABLE_GSON
 			);
-	private static final LineListConfigFile SKIN_USERNAMES =
-			new LineListConfigFile(DIRECTORY.resolve("skins.txt"));
+    private static final LineListConfigFile SKIN_USERNAMES =
+            new LineListConfigFile(
+                    DIRECTORY.resolve("skins.txt"),
+                    List.of("Notch", "Dream", "Technoblade")
+            );
 
 	private static final List<ConfigFile> FILES = List.of(
 			DEATHBAN,
@@ -75,6 +78,7 @@ public final class AshmareConfig {
 		CHAT.save();
 		NAMES.save();
 		SKINS.save();
+        SKIN_USERNAMES.save();
 		AshmareMod.LOGGER.info("Loaded {} Ashmare config files from {}.", FILES.size(), DIRECTORY);
 	}
 
