@@ -1,0 +1,17 @@
+{
+	"required": true,
+	"package": "com.arsh.ashmare.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"mixins": [
+		"ChunkMapAccessor",
+		"CommandSourceStackMixin",
+		"PlayerInfoPacketMixin",
+		"PlayerListMixin",
+		"PlayerNameMixin",
+		"ServerPlayerMixin",
+		"TrackedEntityAccessor"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}

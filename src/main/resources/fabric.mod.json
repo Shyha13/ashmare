@@ -1,0 +1,26 @@
+{
+	"schemaVersion": 1,
+	"id": "ashmare",
+	"version": "${version}",
+	"name": "Ashmare",
+	"description": "Server-side utilities for Ashmare.",
+	"authors": [
+		"Arsh"
+	],
+	"license": "All-Rights-Reserved",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"com.arsh.ashmare.AshmareMod"
+		]
+	},
+	"mixins": [
+		"ashmare.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.19.3",
+		"minecraft": "~1.21.11",
+		"java": ">=21",
+		"fabric-api": "*"
+	}
+}
