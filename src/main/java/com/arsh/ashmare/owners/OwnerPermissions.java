@@ -23,7 +23,7 @@ public final class OwnerPermissions {
 		return SERVER_OWNER.test(source) || isConfiguredOwner(source);
 	}
 
-	private static boolean isConfiguredOwner(CommandSourceStack source) {
+	public static boolean isConfiguredOwner(CommandSourceStack source) {
 		ServerPlayer player = source.getPlayer();
 		return player != null && OwnerManager.isOwner(player);
 	}

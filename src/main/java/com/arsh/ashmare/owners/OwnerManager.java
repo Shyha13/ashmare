@@ -35,7 +35,7 @@ public final class OwnerManager {
 		activeServer = Objects.requireNonNull(server, "server");
 		owners().stream()
 				.filter(OwnerEntry::isResolved)
-				.forEach(owner -> enforceOwnerBypasses(server, owner.uuid()));
+				.forEach(owner -> enforceOwnerBypasses(server, owner));
 		resolveUnresolvedOwners(server);
 	}
 
@@ -67,13 +67,74 @@ public final class OwnerManager {
 		return AshmareConfig.owners().get().owners();
 	}
 
+	public static Optional<OwnerEntry> owner(ServerPlayer player) {
+		Objects.requireNonNull(player, "player");
+		return AshmareConfig.owners().read(config -> config.find(
+				player.getUUID(),
+				player.getGameProfile().name()
+		));
+	}
+
+	public static boolean bypassesNameRandomization(ServerPlayer player) {
+		return owner(player)
+				.map(OwnerEntry::bypassNameRandomization)
+				.orElse(false);
+	}
+
+	public static boolean bypassesNameRandomization(UUID uuid) {
+		return AshmareConfig.owners().read(config ->
+				config.find(uuid)
+						.map(OwnerEntry::bypassNameRandomization)
+						.orElse(false)
+		);
+	}
+
+	public static boolean bypassesNameRandomization(
+			UUID uuid,
+			String username
+	) {
+		return AshmareConfig.owners().read(config ->
+				config.find(uuid, username)
+						.map(OwnerEntry::bypassNameRandomization)
+						.orElse(false)
+		);
+	}
+
+	public static boolean bypassesSkinRandomization(ServerPlayer player) {
+		return owner(player)
+				.map(OwnerEntry::bypassSkinRandomization)
+				.orElse(false);
+	}
+
+	public static boolean bypassesSkinRandomization(UUID uuid) {
+		return AshmareConfig.owners().read(config ->
+				config.find(uuid)
+						.map(OwnerEntry::bypassSkinRandomization)
+						.orElse(false)
+		);
+	}
+
+	public static boolean bypassesSkinRandomization(
+			UUID uuid,
+			String username
+	) {
+		return AshmareConfig.owners().read(config ->
+				config.find(uuid, username)
+						.map(OwnerEntry::bypassSkinRandomization)
+						.orElse(false)
+		);
+	}
+
 	public static boolean addOwner(MinecraftServer server, NameAndId identity) {
 		Objects.requireNonNull(server, "server");
 		Objects.requireNonNull(identity, "identity");
 		boolean added = AshmareConfig.owners().updateAndGet(config ->
 				config.add(identity.id(), identity.name())
 		);
-		enforceOwnerBypasses(server, identity.id());
+		AshmareConfig.owners().read(config -> config.find(
+				identity.id(),
+				identity.name()
+		)).ifPresent(owner -> enforceOwnerBypasses(server, owner));
 		return added;
 	}
 
@@ -81,6 +142,27 @@ public final class OwnerManager {
 		return AshmareConfig.owners().updateAndGet(
 				config -> config.remove(usernameOrUuid)
 		);
+	}
+
+	public static Optional<OwnerEntry> toggleBypass(
+			MinecraftServer server,
+			ServerPlayer player,
+			OwnerBypass bypass
+	) {
+		Objects.requireNonNull(server, "server");
+		Objects.requireNonNull(player, "player");
+		Objects.requireNonNull(bypass, "bypass");
+
+		Optional<OwnerEntry> updated = AshmareConfig.owners().updateAndGet(
+				config -> config.toggleBypass(
+						player.getUUID(),
+						player.getGameProfile().name(),
+						bypass
+				)
+		);
+		updated.filter(owner -> owner.bypasses(bypass))
+				.ifPresent(owner -> enforceOwnerBypasses(server, owner));
+		return updated;
 	}
 
 	public static void observePlayer(
@@ -112,7 +194,10 @@ public final class OwnerManager {
 					uuid
 			);
 		}
-		enforceOwnerBypasses(server, uuid);
+		AshmareConfig.owners().read(config -> config.find(
+				uuid,
+				username
+		)).ifPresent(entry -> enforceOwnerBypasses(server, entry));
 	}
 
 	private static void resolveUnresolvedOwners(MinecraftServer server) {
@@ -152,7 +237,12 @@ public final class OwnerManager {
 							)
 					);
 					if (updated) {
-						enforceOwnerBypasses(server, identity.id());
+						AshmareConfig.owners().read(config -> config.find(
+								identity.id(),
+								identity.name()
+						)).ifPresent(entry ->
+								enforceOwnerBypasses(server, entry)
+						);
 						AshmareMod.LOGGER.info(
 								"Resolved Ashmare owner {} as {}.",
 								identity.name(),
@@ -176,13 +266,27 @@ public final class OwnerManager {
 
 	private static void enforceOwnerBypasses(
 			MinecraftServer server,
-			UUID uuid
+			OwnerEntry owner
 	) {
+		UUID uuid = owner.uuid();
+		if (uuid == null) {
+			return;
+		}
 		DeathbanManager.clearForOwner(uuid);
-		if (AshmareConfig.names().read(config -> config.find(uuid).isPresent())) {
+		if (
+			owner.bypassNameRandomization()
+					&& AshmareConfig.names().read(
+							config -> config.find(uuid).isPresent()
+					)
+		) {
 			NameRandomizer.clear(server, uuid);
 		}
-		if (AshmareConfig.skins().read(config -> config.find(uuid).isPresent())) {
+		if (
+			owner.bypassSkinRandomization()
+					&& AshmareConfig.skins().read(
+							config -> config.find(uuid).isPresent()
+					)
+		) {
 			SkinRandomizer.clear(server, uuid);
 		}
 	}

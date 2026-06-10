@@ -5,10 +5,19 @@ Ashmare is a server-side Fabric mod for the Ashmare SMP.
 ## Owner system
 
 `config/ashmare/owners.json` is the only source of Ashmare owner privileges.
-Configured owners can use `/ashmare` without vanilla operator status and bypass
-deathbans, fake-name randomization, and fake-skin randomization. Vanilla
-permission level 2 or higher can use normal Ashmare commands; configured owners
-or vanilla permission level 4 can manage the owner list with:
+Configured owners can use `/ashmare` without vanilla operator status and always
+bypass deathbans. Owners are affected by fake-name and fake-skin randomization
+by default, but each owner can independently toggle personal bypasses with:
+
+- `/ashmare bypass name`
+- `/ashmare bypass skin`
+- `/ashmare bypass list`
+
+Enabling a bypass immediately restores the owner's real name or skin. Disabling
+one makes the owner eligible for the next randomization. Bypass settings persist
+inside `owners.json`. Vanilla permission level 2 or higher can use normal
+Ashmare commands; configured owners or vanilla permission level 4 can manage
+the owner list with:
 
 - `/ashmare owners list`
 - `/ashmare owners add <player>`
@@ -61,7 +70,7 @@ Install Java 21, open a terminal in the Ashmare source directory, and run:
 .\gradlew.bat clean build
 ```
 
-The distributable file is `build/libs/ashmare-1.0.2.jar`. Do not use the
+The distributable file is `build/libs/ashmare-1.0.3.jar`. Do not use the
 `-sources.jar`. Place the distributable JAR and the matching Fabric API JAR in
 the server's `mods/` directory, replacing the previous Ashmare JAR.
 

@@ -22,7 +22,7 @@ public final class SkinPresentation {
 		Objects.requireNonNull(playerUuid, "playerUuid");
 		if (
 			ExclusionManager.isExcluded(playerUuid)
-					|| OwnerManager.isOwner(playerUuid)
+					|| OwnerManager.bypassesSkinRandomization(playerUuid)
 		) {
 			return Optional.empty();
 		}
@@ -36,7 +36,10 @@ public final class SkinPresentation {
 		Objects.requireNonNull(playerUuid, "playerUuid");
 		if (
 			ExclusionManager.isExcluded(playerUuid)
-					|| OwnerManager.isOwner(playerUuid, username)
+					|| OwnerManager.bypassesSkinRandomization(
+							playerUuid,
+							username
+					)
 		) {
 			return Optional.empty();
 		}

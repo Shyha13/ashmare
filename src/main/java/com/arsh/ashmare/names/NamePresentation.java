@@ -21,7 +21,7 @@ public final class NamePresentation {
 		Objects.requireNonNull(uuid, "uuid");
 		if (
 			ExclusionManager.isExcluded(uuid)
-					|| OwnerManager.isOwner(uuid)
+					|| OwnerManager.bypassesNameRandomization(uuid)
 		) {
 			return Optional.empty();
 		}
@@ -32,7 +32,7 @@ public final class NamePresentation {
 		Objects.requireNonNull(uuid, "uuid");
 		if (
 			ExclusionManager.isExcluded(uuid)
-					|| OwnerManager.isOwner(uuid, username)
+					|| OwnerManager.bypassesNameRandomization(uuid, username)
 		) {
 			return Optional.empty();
 		}

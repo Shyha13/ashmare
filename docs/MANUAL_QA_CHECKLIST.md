@@ -1,6 +1,6 @@
 # Ashmare Manual QA and Validation Checklist
 
-Version under test: `1.0.2`
+Version under test: `1.0.3`
 Target: Minecraft `1.21.11`, Fabric Loader `0.19.3+`, Java `21`  
 Status values: `PASS`, `FAIL`, `BLOCKED`, `NOT RUN`
 
@@ -160,23 +160,23 @@ Expected first-run files under `config/ashmare/`:
 - **Files/configs affected:** `deathban.json`, `banned-players.json`.
 - **Pass/fail criteria:** PASS if owner remains unbanned and absent from both lists; otherwise FAIL.
 
-### OW-07 Owner bypasses name randomization
+### OW-07 Owner name bypass toggle
 
-- **Purpose:** Verify owners retain real names.
+- **Purpose:** Verify name bypass is optional, persistent, and immediate.
 - **Setup:** `OWNER`, `P1`, and `VIEWER` online.
-- **Exact steps:** 1. Run `/ashmare names randomize`. 2. Inspect command output, tab, chat, and nametags.
-- **Expected result:** `P1` receives a fake name; `OWNER` is absent from assignments and remains visually real.
-- **Files/configs affected:** `names.json`.
-- **Pass/fail criteria:** PASS if no owner assignment exists and all owner displays remain real; otherwise FAIL.
+- **Exact steps:** 1. Run `/ashmare bypass list` and confirm name bypass is OFF. 2. Randomize names and confirm `OWNER` is affected. 3. Run `/ashmare bypass name`. 4. Confirm the real name is restored immediately. 5. Restart and run `/ashmare bypass list`.
+- **Expected result:** Owners are randomized while bypass is OFF; enabling it clears the assignment immediately and remains ON after restart.
+- **Files/configs affected:** `owners.json`, `names.json`.
+- **Pass/fail criteria:** PASS if OFF permits randomization and ON restores and protects the owner; otherwise FAIL.
 
-### OW-08 Owner bypasses skin randomization
+### OW-08 Owner skin bypass toggle
 
-- **Purpose:** Verify owners retain real skins.
+- **Purpose:** Verify skin bypass is optional, persistent, and immediate.
 - **Setup:** Valid populated `skins.txt`; `OWNER`, `P1`, and `VIEWER` online.
-- **Exact steps:** 1. Run `/ashmare skins randomize`. 2. Wait for completion. 3. Inspect `skins.json` and both players visually.
-- **Expected result:** `P1` receives an assignment; `OWNER` does not and keeps the real skin.
-- **Files/configs affected:** `skins.txt`, `skins.json`.
-- **Pass/fail criteria:** PASS if owner has no assignment and no visual replacement; otherwise FAIL.
+- **Exact steps:** 1. Run `/ashmare bypass list` and confirm skin bypass is OFF. 2. Randomize skins and confirm `OWNER` is affected. 3. Run `/ashmare bypass skin`. 4. Confirm the real skin is restored immediately. 5. Restart and run `/ashmare bypass list`.
+- **Expected result:** Owners are randomized while bypass is OFF; enabling it clears the assignment immediately and remains ON after restart.
+- **Files/configs affected:** `owners.json`, `skins.txt`, `skins.json`.
+- **Pass/fail criteria:** PASS if OFF permits randomization and ON restores and protects the owner; otherwise FAIL.
 
 ### OW-09 Owner add command
 
@@ -707,12 +707,12 @@ Expected first-run files under `config/ashmare/`:
 
 ### NR-07 Owner behavior
 
-- **Purpose:** Verify owner bypass.
+- **Purpose:** Verify owner name behavior follows the personal bypass setting.
 - **Setup:** `OWNER` and `P1` online.
-- **Exact steps:** 1. Randomize names. 2. Inspect JSON and displays.
-- **Expected result:** `P1` is randomized; `OWNER` remains real and unassigned.
+- **Exact steps:** 1. Set name bypass OFF and randomize names. 2. Set it ON and randomize again. 3. Inspect JSON and displays after each run.
+- **Expected result:** `OWNER` is randomized while OFF and remains real and unassigned while ON; `P1` is randomized in both runs.
 - **Files/configs affected:** `owners.json`, `names.json`.
-- **Pass/fail criteria:** PASS if owner bypass is complete; otherwise FAIL.
+- **Pass/fail criteria:** PASS if both bypass states are honored; otherwise FAIL.
 
 ### NR-08 Name generation quality
 
@@ -936,12 +936,12 @@ Expected first-run files under `config/ashmare/`:
 
 ### SR-12 Owner behavior
 
-- **Purpose:** Verify owners keep real skins and stale assignments are cleared.
-- **Setup:** Add an assignment to `P1`, then add `P1` as owner; valid source pool.
-- **Exact steps:** 1. Confirm owner addition clears stale assignment. 2. Randomize skins again. 3. Inspect file and views.
-- **Expected result:** Owner remains unassigned and real both immediately and in later runs.
+- **Purpose:** Verify owner skin behavior follows the personal bypass setting.
+- **Setup:** `OWNER` and `P1` online with a valid source pool.
+- **Exact steps:** 1. Set skin bypass OFF and randomize skins. 2. Set it ON and verify the real skin returns. 3. Randomize again. 4. Inspect file and views.
+- **Expected result:** `OWNER` is randomized while OFF; enabling bypass clears the stale assignment immediately and prevents later assignments while ON.
 - **Files/configs affected:** `owners.json`, `skins.json`.
-- **Pass/fail criteria:** PASS if becoming owner and future randomization both enforce bypass; otherwise FAIL.
+- **Pass/fail criteria:** PASS if both bypass states are honored and enabling bypass clears the assignment; otherwise FAIL.
 
 ## Fake Skin Application
 
@@ -1056,8 +1056,8 @@ Fill `Result`, `Tester/date`, and `Evidence/issue` after execution.
 | OW-04 | Existing owners.json is not reseeded | P0 | NOT RUN | | |
 | OW-05 | Owner permissions without operator status | P0 | NOT RUN | | |
 | OW-06 | Owner bypasses deathban | P0 | NOT RUN | | |
-| OW-07 | Owner bypasses name randomization | P0 | NOT RUN | | |
-| OW-08 | Owner bypasses skin randomization | P0 | NOT RUN | | |
+| OW-07 | Owner name bypass toggle | P0 | NOT RUN | | |
+| OW-08 | Owner skin bypass toggle | P0 | NOT RUN | | |
 | OW-09 | Owner add command | P1 | NOT RUN | | |
 | OW-10 | Owner remove command | P1 | NOT RUN | | |
 | OW-11 | Owner list command | P1 | NOT RUN | | |

@@ -4,6 +4,7 @@ import com.arsh.ashmare.chat.ChatCommands;
 import com.arsh.ashmare.deathban.DeathbanCommands;
 import com.arsh.ashmare.exclusions.ExclusionCommands;
 import com.arsh.ashmare.names.NameCommands;
+import com.arsh.ashmare.owners.OwnerBypassCommands;
 import com.arsh.ashmare.owners.OwnerCommands;
 import com.arsh.ashmare.owners.OwnerPermissions;
 import com.arsh.ashmare.skins.SkinCommands;
@@ -33,6 +34,7 @@ public final class AshmareCommands {
 		NameCommands.register(root);
 		SkinCommands.register(root);
 		OwnerCommands.register(root);
+		OwnerBypassCommands.register(root);
 		dispatcher.register(root);
 	}
 
@@ -40,7 +42,7 @@ public final class AshmareCommands {
 		context.getSource().sendSuccess(
 				() -> Component.literal(
 						"Ashmare commands: /ashmare help, ban, unban, sound, chat, names, "
-								+ "skins, exclude, include, excluded, owners"
+								+ "skins, exclude, include, excluded, owners, bypass"
 				),
 				false
 		);

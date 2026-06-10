@@ -56,20 +56,35 @@ public final class OwnersConfig {
 				.findFirst();
 	}
 
+	public Optional<OwnerEntry> find(UUID uuid) {
+		Objects.requireNonNull(uuid, "uuid");
+		ensureOwners();
+		return owners.stream()
+				.filter(owner -> uuid.equals(owner.uuid()))
+				.findFirst();
+	}
+
 	public boolean add(UUID uuid, String username) {
 		Objects.requireNonNull(uuid, "uuid");
 		Objects.requireNonNull(username, "username");
 		ensureOwners();
 
-		boolean alreadyOwned = owners.stream()
-				.anyMatch(owner -> uuid.equals(owner.uuid()));
+		Optional<OwnerEntry> existing = owners.stream()
+				.filter(owner ->
+						uuid.equals(owner.uuid())
+								|| owner.lastKnownUsername()
+										.equalsIgnoreCase(username)
+				)
+				.findFirst();
 		owners.removeIf(owner ->
 				uuid.equals(owner.uuid())
 						|| owner.lastKnownUsername().equalsIgnoreCase(username)
 		);
-		owners.add(new OwnerEntry(uuid, username));
+		owners.add(existing
+				.map(owner -> owner.withIdentity(uuid, username))
+				.orElseGet(() -> new OwnerEntry(uuid, username)));
 		sortOwners();
-		return !alreadyOwned;
+		return existing.isEmpty();
 	}
 
 	public boolean remove(String usernameOrUuid) {
@@ -88,11 +103,11 @@ public final class OwnersConfig {
 		Objects.requireNonNull(canonicalUsername, "canonicalUsername");
 		ensureOwners();
 
-		boolean matched = owners.stream().anyMatch(owner ->
+		Optional<OwnerEntry> matchingOwner = owners.stream().filter(owner ->
 				owner.uuid() == null
 						&& owner.lastKnownUsername().equalsIgnoreCase(lookupUsername)
-		);
-		if (!matched) {
+		).findFirst();
+		if (matchingOwner.isEmpty()) {
 			return false;
 		}
 
@@ -104,7 +119,7 @@ public final class OwnersConfig {
 												.equalsIgnoreCase(lookupUsername)
 						)
 		);
-		owners.add(new OwnerEntry(uuid, canonicalUsername));
+		owners.add(matchingOwner.get().withIdentity(uuid, canonicalUsername));
 		sortOwners();
 		return true;
 	}
@@ -128,9 +143,35 @@ public final class OwnersConfig {
 		owners.removeIf(owner ->
 				uuid.equals(owner.uuid()) || owner == existing
 		);
-		owners.add(new OwnerEntry(uuid, currentUsername));
+		owners.add(existing.withIdentity(uuid, currentUsername));
 		sortOwners();
 		return true;
+	}
+
+	public Optional<OwnerEntry> toggleBypass(
+			UUID uuid,
+			String username,
+			OwnerBypass bypass
+	) {
+		Objects.requireNonNull(uuid, "uuid");
+		Objects.requireNonNull(username, "username");
+		Objects.requireNonNull(bypass, "bypass");
+		ensureOwners();
+
+		Optional<OwnerEntry> matchingOwner = find(uuid, username);
+		if (matchingOwner.isEmpty()) {
+			return Optional.empty();
+		}
+
+		OwnerEntry existing = matchingOwner.get();
+		OwnerEntry updated = existing.withBypass(
+				bypass,
+				!existing.bypasses(bypass)
+		);
+		owners.remove(existing);
+		owners.add(updated);
+		sortOwners();
+		return Optional.of(updated);
 	}
 
 	private void ensureOwners() {

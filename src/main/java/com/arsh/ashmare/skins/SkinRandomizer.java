@@ -71,7 +71,9 @@ public final class SkinRandomizer {
 					.stream()
 					.filter(player ->
 							!ExclusionManager.isExcluded(player.getUUID())
-									&& !OwnerManager.isOwner(player)
+									&& !OwnerManager.bypassesSkinRandomization(
+											player
+									)
 					)
 					.map(PlayerIdentity::from)
 					.toList();
@@ -215,7 +217,7 @@ public final class SkinRandomizer {
 		List<PlayerIdentity> eligiblePlayers = requestedPlayers.stream()
 				.filter(player ->
 						!ExclusionManager.isExcluded(player.uuid())
-								&& !OwnerManager.isOwner(
+								&& !OwnerManager.bypassesSkinRandomization(
 										player.uuid(),
 										player.username()
 								)

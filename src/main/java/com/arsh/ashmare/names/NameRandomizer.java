@@ -27,7 +27,7 @@ public final class NameRandomizer {
 		List<ServerPlayer> eligiblePlayers = players.stream()
 				.filter(player ->
 						!ExclusionManager.isExcluded(player.getUUID())
-								&& !OwnerManager.isOwner(player)
+								&& !OwnerManager.bypassesNameRandomization(player)
 				)
 				.toList();
 
