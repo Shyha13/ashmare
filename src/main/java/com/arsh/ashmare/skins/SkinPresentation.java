@@ -21,7 +21,7 @@ public final class SkinPresentation {
 	public static Optional<SkinAssignment> assignment(UUID playerUuid) {
 		Objects.requireNonNull(playerUuid, "playerUuid");
 		if (
-			ExclusionManager.isExcluded(playerUuid)
+			ExclusionManager.blocksIdentityRandomization(playerUuid)
 					|| OwnerManager.bypassesSkinRandomization(playerUuid)
 		) {
 			return Optional.empty();
@@ -35,7 +35,10 @@ public final class SkinPresentation {
 	) {
 		Objects.requireNonNull(playerUuid, "playerUuid");
 		if (
-			ExclusionManager.isExcluded(playerUuid)
+			ExclusionManager.blocksIdentityRandomization(
+					playerUuid,
+					username
+			)
 					|| OwnerManager.bypassesSkinRandomization(
 							playerUuid,
 							username

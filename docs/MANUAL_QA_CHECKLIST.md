@@ -1,6 +1,6 @@
 # Ashmare Manual QA and Validation Checklist
 
-Version under test: `1.0.4`
+Version under test: `1.0.5`
 Target: Minecraft `1.21.11`, Fabric Loader `0.19.3+`, Java `21`  
 Status values: `PASS`, `FAIL`, `BLOCKED`, `NOT RUN`
 
@@ -164,7 +164,7 @@ Expected first-run files under `config/ashmare/`:
 
 - **Purpose:** Verify name bypass is optional, persistent, and immediate.
 - **Setup:** `OWNER`, `P1`, and `VIEWER` online.
-- **Exact steps:** 1. Run `/ashmare bypass list` and confirm name bypass is OFF. 2. Randomize names and confirm `OWNER` is affected. 3. Run `/ashmare bypass name`. 4. Confirm the real name is restored immediately. 5. Restart and run `/ashmare bypass list`.
+- **Exact steps:** 1. Run `/ashmare bypass` and confirm name bypass is OFF. 2. Randomize names and confirm `OWNER` is affected even if a legacy exclusion entry exists. 3. Run `/ashmare bypass name`. 4. Confirm the real name is restored immediately. 5. Restart and run `/ashmare bypass list`.
 - **Expected result:** Owners are randomized while bypass is OFF; enabling it clears the assignment immediately and remains ON after restart.
 - **Files/configs affected:** `owners.json`, `names.json`.
 - **Pass/fail criteria:** PASS if OFF permits randomization and ON restores and protects the owner; otherwise FAIL.
@@ -173,7 +173,7 @@ Expected first-run files under `config/ashmare/`:
 
 - **Purpose:** Verify skin bypass is optional, persistent, and immediate.
 - **Setup:** Valid populated `skins.txt`; `OWNER`, `P1`, and `VIEWER` online.
-- **Exact steps:** 1. Run `/ashmare bypass list` and confirm skin bypass is OFF. 2. Randomize skins and confirm `OWNER` is affected. 3. Run `/ashmare bypass skin`. 4. Confirm the real skin is restored immediately. 5. Restart and run `/ashmare bypass list`.
+- **Exact steps:** 1. Run `/ashmare bypass` and confirm skin bypass is OFF. 2. Randomize skins and confirm `OWNER` is affected even if a legacy exclusion entry exists. 3. Run `/ashmare bypass skin`. 4. Confirm the real skin is restored immediately. 5. Restart and run `/ashmare bypass list`.
 - **Expected result:** Owners are randomized while bypass is OFF; enabling it clears the assignment immediately and remains ON after restart.
 - **Files/configs affected:** `owners.json`, `skins.txt`, `skins.json`.
 - **Pass/fail criteria:** PASS if OFF permits randomization and ON restores and protects the owner; otherwise FAIL.

@@ -13,6 +13,8 @@ by default, but each owner can independently toggle personal bypasses with:
 - `/ashmare bypass skin`
 - `/ashmare bypass list`
 
+Running `/ashmare bypass` by itself also displays the list.
+
 Enabling a bypass immediately restores the owner's real name or skin. Disabling
 one makes the owner eligible for the next randomization. Bypass settings persist
 inside `owners.json`. Vanilla permission level 2 or higher can use normal
@@ -22,6 +24,11 @@ the owner list with:
 - `/ashmare owners list`
 - `/ashmare owners add <player>`
 - `/ashmare owners remove <player>`
+
+For name and skin randomization, configured owner bypass settings take
+precedence over legacy entries in `exclusions.json`. This lets an owner turn a
+bypass OFF and participate in randomization without manually removing an old
+exclusion. Exclusions continue to protect all non-owner players.
 
 On the first startup only, a missing `owners.json` is generated with `Shyha` as
 the default owner account for the Ashmare SMP. Ashmare resolves the account
@@ -84,7 +91,7 @@ Install Java 21, open a terminal in the Ashmare source directory, and run:
 .\gradlew.bat clean build
 ```
 
-The distributable file is `build/libs/ashmare-1.0.4.jar`. Do not use the
+The distributable file is `build/libs/ashmare-1.0.5.jar`. Do not use the
 `-sources.jar`. Place the distributable JAR and the matching Fabric API JAR in
 the server's `mods/` directory, replacing the previous Ashmare JAR.
 

@@ -15,7 +15,7 @@ public final class OwnerBypassCommands {
 
 	public static void register(LiteralArgumentBuilder<CommandSourceStack> root) {
 		root.then(Commands.literal("bypass")
-				.requires(OwnerPermissions::isConfiguredOwner)
+				.executes(OwnerBypassCommands::list)
 				.then(Commands.literal("name")
 						.executes(context -> toggle(context, OwnerBypass.NAME)))
 				.then(Commands.literal("skin")

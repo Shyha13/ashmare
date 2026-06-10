@@ -20,7 +20,7 @@ public final class NamePresentation {
 	public static Optional<String> fakeName(UUID uuid) {
 		Objects.requireNonNull(uuid, "uuid");
 		if (
-			ExclusionManager.isExcluded(uuid)
+			ExclusionManager.blocksIdentityRandomization(uuid)
 					|| OwnerManager.bypassesNameRandomization(uuid)
 		) {
 			return Optional.empty();
@@ -31,7 +31,7 @@ public final class NamePresentation {
 	public static Optional<String> fakeName(UUID uuid, String username) {
 		Objects.requireNonNull(uuid, "uuid");
 		if (
-			ExclusionManager.isExcluded(uuid)
+			ExclusionManager.blocksIdentityRandomization(uuid, username)
 					|| OwnerManager.bypassesNameRandomization(uuid, username)
 		) {
 			return Optional.empty();

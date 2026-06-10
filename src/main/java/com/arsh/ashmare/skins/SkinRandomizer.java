@@ -71,7 +71,7 @@ public final class SkinRandomizer {
 					.getPlayers()
 					.stream()
 					.filter(player ->
-							!ExclusionManager.isExcluded(player.getUUID())
+							!ExclusionManager.blocksIdentityRandomization(player)
 									&& !OwnerManager.bypassesSkinRandomization(
 											player
 									)
@@ -133,7 +133,10 @@ public final class SkinRandomizer {
 		}
 
 		try {
-			if (ExclusionManager.isExcluded(target.id())) {
+			if (ExclusionManager.blocksIdentityRandomization(
+					target.id(),
+					target.name()
+			)) {
 				return completedTargetFailure(
 						"Cannot randomize " + target.name()
 								+ ": that player is excluded."
@@ -304,7 +307,10 @@ public final class SkinRandomizer {
 
 		List<PlayerIdentity> eligiblePlayers = requestedPlayers.stream()
 				.filter(player ->
-						!ExclusionManager.isExcluded(player.uuid())
+						!ExclusionManager.blocksIdentityRandomization(
+								player.uuid(),
+								player.username()
+						)
 								&& !OwnerManager.bypassesSkinRandomization(
 										player.uuid(),
 										player.username()
@@ -377,7 +383,10 @@ public final class SkinRandomizer {
 					failures
 			);
 		}
-		if (ExclusionManager.isExcluded(target.uuid())) {
+		if (ExclusionManager.blocksIdentityRandomization(
+				target.uuid(),
+				target.username()
+		)) {
 			return SkinRandomizationResult.failure(
 					"Cannot randomize " + target.username()
 							+ ": that player is excluded.",
