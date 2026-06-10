@@ -1,6 +1,7 @@
 package com.arsh.ashmare.skins;
 
 import com.arsh.ashmare.AshmareMod;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -12,6 +13,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.players.NameAndId;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.concurrent.CompletionException;
 
 public final class SkinCommands {
@@ -32,6 +34,28 @@ public final class SkinCommands {
 										GameProfileArgument.gameProfile()
 								)
 								.executes(SkinCommands::clearPlayer))));
+		root.then(Commands.literal("skin")
+				.then(Commands.literal("randomize")
+						.then(Commands.argument(
+										"player",
+										GameProfileArgument.gameProfile()
+								)
+								.executes(context ->
+										randomizePlayer(context, Optional.empty())
+								)
+								.then(Commands.argument(
+												"source_username",
+												StringArgumentType.word()
+										)
+										.executes(context -> randomizePlayer(
+												context,
+												Optional.of(
+														StringArgumentType.getString(
+																context,
+																"source_username"
+														)
+												)
+										))))));
 	}
 
 	private static int randomize(CommandContext<CommandSourceStack> context) {
@@ -57,6 +81,69 @@ public final class SkinCommands {
 						Throwable cause = unwrap(throwable);
 						AshmareMod.LOGGER.error(
 								"Skin randomization failed.",
+								cause
+						);
+						source.sendFailure(Component.literal(
+								"Skin randomization failed: " + safeMessage(cause)
+						));
+						return;
+					}
+					reportResult(source, result);
+				})
+		);
+		return 1;
+	}
+
+	private static int randomizePlayer(
+			CommandContext<CommandSourceStack> context,
+			Optional<String> sourceUsername
+	) throws CommandSyntaxException {
+		Collection<NameAndId> profiles = GameProfileArgument.getGameProfiles(
+				context,
+				"player"
+		);
+		if (profiles.size() != 1) {
+			context.getSource().sendFailure(
+					Component.literal("Select exactly one target player.")
+			);
+			return 0;
+		}
+
+		NameAndId target = profiles.iterator().next();
+		CommandSourceStack source = context.getSource();
+		MinecraftServer server = source.getServer();
+		var future = SkinRandomizer.randomize(
+				server,
+				target,
+				sourceUsername
+		);
+		if (future.isEmpty()) {
+			source.sendFailure(
+					Component.literal("A skin randomization is already running.")
+			);
+			return 0;
+		}
+
+		source.sendSuccess(
+				() -> Component.literal(
+						sourceUsername
+								.map(username ->
+										"Resolving skin from " + username
+												+ " for " + target.name() + "..."
+								)
+								.orElse(
+										"Choosing a skin from skins.txt for "
+												+ target.name() + "..."
+								)
+				),
+				false
+		);
+		future.get().whenComplete((result, throwable) ->
+				server.execute(() -> {
+					if (throwable != null) {
+						Throwable cause = unwrap(throwable);
+						AshmareMod.LOGGER.error(
+								"Targeted skin randomization failed.",
 								cause
 						);
 						source.sendFailure(Component.literal(

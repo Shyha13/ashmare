@@ -6,6 +6,7 @@ import com.arsh.ashmare.owners.OwnerManager;
 import com.arsh.ashmare.presentation.PlayerProfilePresentation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.players.NameAndId;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -102,6 +103,93 @@ public final class SkinRandomizer {
 									result.complete(commitAssignments(
 											server,
 											players,
+											sourceList.invalidSources(),
+											batch
+									));
+								} catch (RuntimeException exception) {
+									result.completeExceptionally(exception);
+								} finally {
+									RANDOMIZATION_RUNNING.set(false);
+								}
+							})
+					);
+			return Optional.of(result);
+		} catch (RuntimeException exception) {
+			RANDOMIZATION_RUNNING.set(false);
+			return Optional.of(CompletableFuture.failedFuture(exception));
+		}
+	}
+
+	public static Optional<CompletableFuture<SkinRandomizationResult>> randomize(
+			MinecraftServer server,
+			NameAndId target,
+			Optional<String> requestedSource
+	) {
+		Objects.requireNonNull(server, "server");
+		Objects.requireNonNull(target, "target");
+		Objects.requireNonNull(requestedSource, "requestedSource");
+		if (!RANDOMIZATION_RUNNING.compareAndSet(false, true)) {
+			return Optional.empty();
+		}
+
+		try {
+			if (ExclusionManager.isExcluded(target.id())) {
+				return completedTargetFailure(
+						"Cannot randomize " + target.name()
+								+ ": that player is excluded."
+				);
+			}
+			if (OwnerManager.bypassesSkinRandomization(
+					target.id(),
+					target.name()
+			)) {
+				return completedTargetFailure(
+						"Cannot randomize " + target.name()
+								+ ": that owner has skin bypass enabled."
+				);
+			}
+
+			AshmareConfig.skinUsernames().load();
+			SkinSourceDefaults.ensureUsableSources(
+					AshmareConfig.skinUsernames()
+			);
+			SkinSourceParser.Result sourceList = SkinSourceRequest.select(
+					AshmareConfig.skinUsernames().get(),
+					requestedSource
+			);
+			if (sourceList.usernames().isEmpty()) {
+				String message = requestedSource.isPresent()
+						? "The requested source is not a valid Minecraft Java username."
+						: "No usable skin usernames were found in "
+								+ AshmareConfig.skinUsernames().path() + ".";
+				return completedTargetFailure(
+						message,
+						sourceList.invalidSources()
+				);
+			}
+
+			List<String> sources = new ArrayList<>(sourceList.usernames());
+			if (requestedSource.isEmpty()) {
+				Collections.shuffle(sources);
+			}
+
+			SkinsConfig configSnapshot = AshmareConfig.skins().get();
+			CompletableFuture<SkinRandomizationResult> result =
+					new CompletableFuture<>();
+			resolveAll(sources, configSnapshot)
+					.whenComplete((batch, throwable) ->
+							server.execute(() -> {
+								try {
+									if (throwable != null) {
+										result.completeExceptionally(throwable);
+										return;
+									}
+									result.complete(commitTargetAssignment(
+											server,
+											new PlayerIdentity(
+													target.id(),
+													target.name()
+											),
 											sourceList.invalidSources(),
 											batch
 									));
@@ -273,6 +361,81 @@ public final class SkinRandomizer {
 				batch.warnings(),
 				null
 		);
+	}
+
+	private static SkinRandomizationResult commitTargetAssignment(
+			MinecraftServer server,
+			PlayerIdentity target,
+			List<String> invalidSources,
+			ResolutionBatch batch
+	) {
+		List<String> failures = new ArrayList<>(invalidSources);
+		failures.addAll(batch.failures());
+		if (batch.skins().isEmpty()) {
+			return SkinRandomizationResult.failure(
+					"Could not resolve a usable skin texture.",
+					failures
+			);
+		}
+		if (ExclusionManager.isExcluded(target.uuid())) {
+			return SkinRandomizationResult.failure(
+					"Cannot randomize " + target.username()
+							+ ": that player is excluded.",
+					failures
+			);
+		}
+		if (OwnerManager.bypassesSkinRandomization(
+				target.uuid(),
+				target.username()
+		)) {
+			return SkinRandomizationResult.failure(
+					"Cannot randomize " + target.username()
+							+ ": that owner has skin bypass enabled.",
+					failures
+			);
+		}
+
+		CachedSkin selectedSkin = batch.skins().getFirst();
+		Map<String, String> assignments = AshmareConfig.skins().updateAndGet(
+				config -> {
+					batch.skins().forEach(config::putCached);
+					config.put(new SkinAssignment(
+							target.uuid(),
+							target.username(),
+							selectedSkin.sourceUuid(),
+							selectedSkin.sourceUsername(),
+							selectedSkin.texture()
+					));
+					return Map.of(
+							target.username(),
+							selectedSkin.sourceUsername()
+					);
+				}
+		);
+		PlayerProfilePresentation.refresh(server, List.of(target.uuid()));
+		return new SkinRandomizationResult(
+				assignments,
+				batch.skins().size(),
+				failures,
+				batch.warnings(),
+				null
+		);
+	}
+
+	private static Optional<CompletableFuture<SkinRandomizationResult>>
+			completedTargetFailure(String message) {
+		return completedTargetFailure(message, List.of());
+	}
+
+	private static Optional<CompletableFuture<SkinRandomizationResult>>
+			completedTargetFailure(
+					String message,
+					List<String> failures
+			) {
+		RANDOMIZATION_RUNNING.set(false);
+		return Optional.of(CompletableFuture.completedFuture(
+				SkinRandomizationResult.failure(message, failures)
+		));
 	}
 
 	private record PlayerIdentity(UUID uuid, String username) {

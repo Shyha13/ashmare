@@ -42,7 +42,7 @@ public final class AshmareCommands {
 		context.getSource().sendSuccess(
 				() -> Component.literal(
 						"Ashmare commands: /ashmare help, ban, unban, sound, chat, names, "
-								+ "skins, exclude, include, excluded, owners, bypass"
+								+ "skin, skins, exclude, include, excluded, owners, bypass"
 				),
 				false
 		);

@@ -56,6 +56,20 @@ those defaults at startup or the next time `/ashmare skins randomize` runs.
 Once the file contains at least one usable username, custom entries are
 preserved.
 
+Use `/ashmare skins randomize` to randomize every eligible online player. To
+target one player, use:
+
+```text
+/ashmare skin randomize <player>
+/ashmare skin randomize <player> <source_username>
+```
+
+Without `source_username`, Ashmare randomly chooses a resolved source from
+`skins.txt`. With it, Ashmare fetches that Minecraft Java account's skin even
+when the source is not listed in `skins.txt`. The target may be offline; the
+assignment then appears when they next connect. Excluded players and owners
+with skin bypass enabled cannot be targeted.
+
 The file must be named exactly `skins.txt`, not `skins.txt.txt`. On a hosted
 server, edit the file inside that server's `config/ashmare/` directory. Run
 `/ashmare skins randomize` after saving it; Ashmare reloads the file for every
@@ -70,7 +84,7 @@ Install Java 21, open a terminal in the Ashmare source directory, and run:
 .\gradlew.bat clean build
 ```
 
-The distributable file is `build/libs/ashmare-1.0.3.jar`. Do not use the
+The distributable file is `build/libs/ashmare-1.0.4.jar`. Do not use the
 `-sources.jar`. Place the distributable JAR and the matching Fabric API JAR in
 the server's `mods/` directory, replacing the previous Ashmare JAR.
 

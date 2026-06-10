@@ -1,6 +1,6 @@
 # Ashmare Manual QA and Validation Checklist
 
-Version under test: `1.0.3`
+Version under test: `1.0.4`
 Target: Minecraft `1.21.11`, Fabric Loader `0.19.3+`, Java `21`  
 Status values: `PASS`, `FAIL`, `BLOCKED`, `NOT RUN`
 
@@ -943,6 +943,24 @@ Expected first-run files under `config/ashmare/`:
 - **Files/configs affected:** `owners.json`, `skins.json`.
 - **Pass/fail criteria:** PASS if both bypass states are honored and enabling bypass clears the assignment; otherwise FAIL.
 
+### SR-13 Targeted randomization from pool
+
+- **Purpose:** Verify one player can receive a random source from `skins.txt`.
+- **Setup:** `P1` included with skin bypass OFF; at least two valid source usernames in `skins.txt`.
+- **Exact steps:** 1. Run `/ashmare skin randomize P1`. 2. Wait for completion. 3. Inspect `skins.json` and `P1` from `VIEWER`. 4. Repeat several times.
+- **Expected result:** Only `P1` is updated, each assignment comes from `skins.txt`, and other players remain unchanged.
+- **Files/configs affected:** `skins.txt`, `skins.json`.
+- **Pass/fail criteria:** PASS if the target alone receives a valid pooled skin; otherwise FAIL.
+
+### SR-14 Targeted explicit source
+
+- **Purpose:** Verify a specific Minecraft Java username can supply the target skin without being in `skins.txt`.
+- **Setup:** `P1` included with skin bypass OFF; choose a valid source account absent from `skins.txt`.
+- **Exact steps:** 1. Run `/ashmare skin randomize P1 <source_username>`. 2. Wait for completion. 3. Inspect command output, `skins.json`, and `P1` from `VIEWER`. 4. Repeat with an invalid source username.
+- **Expected result:** The valid account's exact signed texture is assigned to `P1`; the invalid account produces a clear failure and does not replace the existing assignment.
+- **Files/configs affected:** `skins.json`; `skins.txt` remains unchanged.
+- **Pass/fail criteria:** PASS if explicit valid lookup works and invalid lookup fails without corrupting state; otherwise FAIL.
+
 ## Fake Skin Application
 
 ### FS-01 Skin replacement
@@ -1141,6 +1159,8 @@ Fill `Result`, `Tester/date`, and `Evidence/issue` after execution.
 | SR-10 | Skin persistence after restart | P0 | NOT RUN | | |
 | SR-11 | Excluded player behavior | P0 | NOT RUN | | |
 | SR-12 | Owner behavior | P0 | NOT RUN | | |
+| SR-13 | Targeted randomization from pool | P0 | NOT RUN | | |
+| SR-14 | Targeted explicit source | P0 | NOT RUN | | |
 | FS-01 | Skin replacement | P0 | NOT RUN | | |
 | FS-02 | Skin clearing | P0 | NOT RUN | | |
 | FS-03 | Reconnect behavior | P1 | NOT RUN | | |
