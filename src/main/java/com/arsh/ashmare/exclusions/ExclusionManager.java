@@ -60,7 +60,7 @@ public final class ExclusionManager {
 				player.getGameProfile().name()
 		));
 		DeathbanManager.clearForExclusion(player.getUUID());
-		PlayerProfilePresentation.refresh(player.getUUID());
+		PlayerProfilePresentation.refreshSkin(player.getUUID());
 		return added;
 	}
 
@@ -70,7 +70,7 @@ public final class ExclusionManager {
 				config -> config.include(uuid)
 		);
 		if (removed) {
-			PlayerProfilePresentation.refresh(uuid);
+			PlayerProfilePresentation.refreshSkin(uuid);
 		}
 		return removed;
 	}

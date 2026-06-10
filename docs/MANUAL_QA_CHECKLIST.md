@@ -965,30 +965,30 @@ Expected first-run files under `config/ashmare/`:
 
 ### FS-01 Skin replacement
 
-- **Purpose:** Verify assigned signed texture is visible to remote clients.
+- **Purpose:** Verify assigned signed texture is visible to remote clients and the assigned player's own client without reconnecting.
 - **Setup:** Known source skin, assigned `P1`, `VIEWER` nearby.
-- **Exact steps:** 1. Record `P1` original skin. 2. Randomize. 3. Compare `VIEWER`'s view and tab head with source account.
-- **Expected result:** Remote body and player-list skin match the assigned source.
+- **Exact steps:** 1. Record `P1` original skin. 2. Randomize. 3. Compare `VIEWER`'s view, tab head, and `P1`'s third-person/inventory self-view with the source account without reconnecting.
+- **Expected result:** Remote body, player-list skin, and own-client self-view match the assigned source immediately.
 - **Files/configs affected:** `skins.json`.
-- **Pass/fail criteria:** PASS if remote visible skin changes to source texture; otherwise FAIL.
+- **Pass/fail criteria:** PASS if every view changes to the source texture without reconnecting; otherwise FAIL.
 
 ### FS-02 Skin clearing
 
 - **Purpose:** Verify clearing restores original profile texture.
 - **Setup:** `P1` visibly assigned; `VIEWER` online.
-- **Exact steps:** 1. Clear `P1`. 2. Observe remote body and tab head. 3. Reconnect `P1` if self-view remains stale.
-- **Expected result:** Remote clients immediately return to real skin; player's own local self-view may require reconnect.
+- **Exact steps:** 1. Clear `P1`. 2. Observe remote body, tab head, and `P1`'s self-view without reconnecting. 3. Verify position, inventory, health, hunger, XP, effects, mount, and spectator camera state are unchanged.
+- **Expected result:** Remote clients and the player's own local view immediately return to the real skin. An open container screen may close during the vanilla client-entity rebuild, but gameplay state remains intact.
 - **Files/configs affected:** `skins.json`.
-- **Pass/fail criteria:** PASS if remote views restore immediately and self-view restores by reconnect at latest; otherwise FAIL.
+- **Pass/fail criteria:** PASS if all views restore without reconnect and no gameplay state is lost; otherwise FAIL.
 
-### FS-03 Reconnect behavior
+### FS-03 Live refresh and reconnect behavior
 
-- **Purpose:** Verify reconnect completes refresh for the assigned player's own client.
+- **Purpose:** Verify skin changes apply live and remain authoritative through reconnect.
 - **Setup:** `P1` assigned and able to view own skin in inventory/third person.
-- **Exact steps:** 1. Check self-view immediately after assignment. 2. Disconnect/reconnect. 3. Check again. 4. Clear and repeat.
-- **Expected result:** After reconnect, own client shows assigned skin; after clear plus reconnect, own real skin returns.
+- **Exact steps:** 1. Check self-view immediately after assignment without reconnecting. 2. Disconnect/reconnect and check again. 3. Clear the skin and verify live restoration. 4. Reconnect once more.
+- **Expected result:** The assigned and cleared skins both appear immediately, and reconnect preserves the current authoritative state.
 - **Files/configs affected:** `skins.json`.
-- **Pass/fail criteria:** PASS if reconnect produces authoritative current state; otherwise FAIL.
+- **Pass/fail criteria:** PASS if live refresh works and reconnect does not change the current assignment state; otherwise FAIL.
 
 ### FS-04 Multiple players
 
@@ -1260,7 +1260,8 @@ external-service testing:
    command feedback, and death message variants.
 6. Chest GUI packet/menu behavior on unmodified and commonly modded clients.
 7. Player-info packet rewriting for tab names and skins.
-8. Remote nametag refresh and the documented own-client skin reconnect path.
+8. Remote nametag refresh and same-session own-client skin refresh, including
+   state preservation.
 9. Real-name leakage across every vanilla death, join, chat, team, and
    translatable-message variant.
 10. Interoperability with proxy software, permissions mods, chat mods,

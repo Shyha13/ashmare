@@ -77,6 +77,12 @@ when the source is not listed in `skins.txt`. The target may be offline; the
 assignment then appears when they next connect. Excluded players and owners
 with skin bypass enabled cannot be targeted.
 
+Online players see assigned and cleared skins without reconnecting. Vanilla
+briefly rebuilds the affected player's local view to invalidate its cached skin,
+so an open inventory or chest screen may close during the refresh. Position,
+inventory contents, health, hunger, experience, effects, abilities, mounts, and
+spectator camera state are preserved and resynchronized.
+
 The file must be named exactly `skins.txt`, not `skins.txt.txt`. On a hosted
 server, edit the file inside that server's `config/ashmare/` directory. Run
 `/ashmare skins randomize` after saving it; Ashmare reloads the file for every
@@ -91,7 +97,7 @@ Install Java 21, open a terminal in the Ashmare source directory, and run:
 .\gradlew.bat clean build
 ```
 
-The distributable file is `build/libs/ashmare-1.0.5.jar`. Do not use the
+The distributable file is `build/libs/ashmare-1.0.6.jar`. Do not use the
 `-sources.jar`. Place the distributable JAR and the matching Fabric API JAR in
 the server's `mods/` directory, replacing the previous Ashmare JAR.
 

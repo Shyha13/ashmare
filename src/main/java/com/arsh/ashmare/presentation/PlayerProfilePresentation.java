@@ -8,11 +8,19 @@ import com.arsh.ashmare.skins.SkinPresentation;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.PropertyMap;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ClientboundGameEventPacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoRemovePacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
+import net.minecraft.network.protocol.game.ClientboundRespawnPacket;
+import net.minecraft.network.protocol.game.ClientboundSetCameraPacket;
+import net.minecraft.network.protocol.game.ClientboundSetExperiencePacket;
+import net.minecraft.network.protocol.game.ClientboundSetHealthPacket;
+import net.minecraft.network.protocol.game.ClientboundSetPassengersPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerEntity;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.food.FoodData;
 
 import java.util.Collection;
 import java.util.List;
@@ -84,9 +92,30 @@ public final class PlayerProfilePresentation {
 		}
 	}
 
+	public static void refreshSkin(UUID uuid) {
+		if (server != null) {
+			refreshSkins(server, List.of(uuid));
+		}
+	}
+
 	public static void refresh(
 			MinecraftServer minecraftServer,
 			Collection<UUID> uuids
+	) {
+		refresh(minecraftServer, uuids, false);
+	}
+
+	public static void refreshSkins(
+			MinecraftServer minecraftServer,
+			Collection<UUID> uuids
+	) {
+		refresh(minecraftServer, uuids, true);
+	}
+
+	private static void refresh(
+			MinecraftServer minecraftServer,
+			Collection<UUID> uuids,
+			boolean refreshLocalSkin
 	) {
 		List<ServerPlayer> players = uuids.stream()
 				.distinct()
@@ -108,6 +137,11 @@ public final class PlayerProfilePresentation {
 				ClientboundPlayerInfoUpdatePacket.createPlayerInitializing(players)
 		);
 		players.forEach(PlayerProfilePresentation::refreshRemoteEntity);
+		if (refreshLocalSkin) {
+			players.forEach(player ->
+					refreshLocalSkin(minecraftServer, player)
+			);
+		}
 	}
 
 	/*
@@ -120,9 +154,6 @@ public final class PlayerProfilePresentation {
 	/*
 	 * Remote player entities cache their PlayerInfo, so they are re-paired after
 	 * the profile update to make name and skin changes visible immediately.
-	 * A client's own LocalPlayer cannot be safely rebuilt with normal server
-	 * packets without a disruptive respawn. Its self-view may retain the previous
-	 * skin until reconnect, while tab and all remote views refresh immediately.
 	 */
 	private static void refreshRemoteEntity(ServerPlayer player) {
 		Object trackedEntity = ((ChunkMapAccessor) (Object) player.level()
@@ -142,5 +173,58 @@ public final class PlayerProfilePresentation {
 				.toList();
 		viewers.forEach(serverEntity::removePairing);
 		viewers.forEach(serverEntity::addPairing);
+	}
+
+	/*
+	 * AbstractClientPlayer caches PlayerInfo, including its skin. Rebuilding the
+	 * local player with a same-dimension KEEP_ALL_DATA respawn is the only
+	 * server-only way to invalidate that cache without requiring a reconnect.
+	 * Vanilla closes an open container screen during this rebuild, but the server
+	 * player and all gameplay state remain untouched and are resynchronized below.
+	 */
+	private static void refreshLocalSkin(
+			MinecraftServer minecraftServer,
+			ServerPlayer player
+	) {
+		Entity vehicle = player.getVehicle();
+		Entity camera = player.getCamera();
+		FoodData food = player.getFoodData();
+
+		player.connection.send(new ClientboundRespawnPacket(
+				player.createCommonSpawnInfo(player.level()),
+				ClientboundRespawnPacket.KEEP_ALL_DATA
+		));
+		player.connection.teleport(
+				player.getX(),
+				player.getY(),
+				player.getZ(),
+				player.getYRot(),
+				player.getXRot()
+		);
+		player.connection.send(new ClientboundSetHealthPacket(
+				player.getHealth(),
+				food.getFoodLevel(),
+				food.getSaturationLevel()
+		));
+		player.connection.send(new ClientboundSetExperiencePacket(
+				player.experienceProgress,
+				player.totalExperience,
+				player.experienceLevel
+		));
+		player.onUpdateAbilities();
+		minecraftServer.getPlayerList().sendActivePlayerEffects(player);
+		minecraftServer.getPlayerList().sendAllPlayerInfo(player);
+
+		if (vehicle != null) {
+			player.connection.send(new ClientboundSetPassengersPacket(vehicle));
+		}
+		if (camera != player) {
+			player.connection.send(new ClientboundSetCameraPacket(camera));
+		}
+
+		player.connection.send(new ClientboundGameEventPacket(
+				ClientboundGameEventPacket.LEVEL_CHUNKS_LOAD_START,
+				0.0F
+		));
 	}
 }

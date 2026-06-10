@@ -215,7 +215,10 @@ public final class SkinRandomizer {
 				config -> config.remove(playerUuid)
 		);
 		if (cleared) {
-			PlayerProfilePresentation.refresh(server, List.of(playerUuid));
+			PlayerProfilePresentation.refreshSkins(
+					server,
+					List.of(playerUuid)
+			);
 		}
 		return cleared;
 	}
@@ -228,7 +231,7 @@ public final class SkinRandomizer {
 				.map(SkinAssignment::playerUuid)
 				.toList();
 		int cleared = AshmareConfig.skins().updateAndGet(SkinsConfig::clear);
-		PlayerProfilePresentation.refresh(server, assignedUuids);
+		PlayerProfilePresentation.refreshSkins(server, assignedUuids);
 		return cleared;
 	}
 
@@ -355,7 +358,7 @@ public final class SkinRandomizer {
 					return Map.copyOf(assigned);
 				}
 		);
-		PlayerProfilePresentation.refresh(
+		PlayerProfilePresentation.refreshSkins(
 				server,
 				eligiblePlayers.stream().map(PlayerIdentity::uuid).toList()
 		);
@@ -421,7 +424,10 @@ public final class SkinRandomizer {
 					);
 				}
 		);
-		PlayerProfilePresentation.refresh(server, List.of(target.uuid()));
+		PlayerProfilePresentation.refreshSkins(
+				server,
+				List.of(target.uuid())
+		);
 		return new SkinRandomizationResult(
 				assignments,
 				batch.skins().size(),
