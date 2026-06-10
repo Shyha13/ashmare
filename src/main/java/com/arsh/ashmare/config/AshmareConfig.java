@@ -6,6 +6,7 @@ import com.arsh.ashmare.deathban.DeathbanConfig;
 import com.arsh.ashmare.exclusions.ExclusionsConfig;
 import com.arsh.ashmare.names.NamesConfig;
 import com.arsh.ashmare.owners.OwnersConfig;
+import com.arsh.ashmare.skins.SkinSourceDefaults;
 import com.arsh.ashmare.skins.SkinsConfig;
 import com.arsh.ashmare.sound.SoundConfig;
 import com.google.gson.Gson;
@@ -55,13 +56,7 @@ public final class AshmareConfig {
 	private static final LineListConfigFile SKIN_USERNAMES =
 			new LineListConfigFile(
 					DIRECTORY.resolve("skins.txt"),
-					List.of(
-							"# Ashmare skin source pool",
-							"# Add real Minecraft Java usernames below, one per line.",
-							"Notch",
-							"Dream",
-							"Technoblade"
-					)
+					SkinSourceDefaults.fileContents()
 			);
 
 	private static final List<ConfigFile> FILES = List.of(
@@ -81,6 +76,13 @@ public final class AshmareConfig {
 	public static synchronized void loadAll() {
 		createConfigDirectory();
 		FILES.forEach(ConfigFile::load);
+		if (SkinSourceDefaults.ensureUsableSources(SKIN_USERNAMES)) {
+			AshmareMod.LOGGER.info(
+					"Populated {} with {} default skin sources.",
+					SKIN_USERNAMES.path(),
+					SkinSourceDefaults.usernames().size()
+			);
+		}
 		CHAT.save();
 		NAMES.save();
 		SKINS.save();

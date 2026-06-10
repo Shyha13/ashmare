@@ -47,6 +47,9 @@ public final class SkinRandomizer {
 
 		try {
 			AshmareConfig.skinUsernames().load();
+			SkinSourceDefaults.ensureUsableSources(
+					AshmareConfig.skinUsernames()
+			);
 			SkinSourceParser.Result sourceList = SkinSourceParser.parse(
 					AshmareConfig.skinUsernames().get()
 			);

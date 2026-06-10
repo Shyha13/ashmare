@@ -30,15 +30,22 @@ Ashmare reads source skins from the server's
 `config/ashmare/skins.txt`. Add real Minecraft Java usernames, one per line:
 
 ```text
-Shyha
 Notch
-jeb_
+Dream
+Technoblade
+Dinnerbone
 ```
 
 Blank lines and lines beginning with `#` or `//` are ignored. UTF-8 files with
 or without a byte-order mark are supported. Comma-, semicolon-, and
 space-separated usernames are also accepted, although one username per line is
 recommended. Duplicate usernames are ignored case-insensitively.
+
+Ashmare `1.0.2` includes ten verified defaults. If `skins.txt` is missing,
+empty, comment-only, or contains no usable usernames, Ashmare repairs it with
+those defaults at startup or the next time `/ashmare skins randomize` runs.
+Once the file contains at least one usable username, custom entries are
+preserved.
 
 The file must be named exactly `skins.txt`, not `skins.txt.txt`. On a hosted
 server, edit the file inside that server's `config/ashmare/` directory. Run
@@ -54,7 +61,7 @@ Install Java 21, open a terminal in the Ashmare source directory, and run:
 .\gradlew.bat clean build
 ```
 
-The distributable file is `build/libs/ashmare-1.0.1.jar`. Do not use the
+The distributable file is `build/libs/ashmare-1.0.2.jar`. Do not use the
 `-sources.jar`. Place the distributable JAR and the matching Fabric API JAR in
 the server's `mods/` directory, replacing the previous Ashmare JAR.
 
